@@ -1,0 +1,12 @@
+# STM32CubeIDE build output
+Debug/
+Release/
+
+# Generated binaries
+*.elf
+*.hex
+*.bin
+*.map
+
+# Eclipse/STM32CubeIDE metadata
+.settings/

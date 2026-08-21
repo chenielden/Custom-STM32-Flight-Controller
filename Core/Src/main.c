@@ -22,11 +22,8 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_SPI1_Init(void);
 
-/* USER CODE BEGIN PFP */
 uint8_t IMU_ReadRegister(uint8_t reg);
-/* USER CODE END PFP */
 
-/* USER CODE BEGIN 0 */
 
 uint8_t IMU_ReadRegister(uint8_t reg)
 {
@@ -37,19 +34,16 @@ uint8_t IMU_ReadRegister(uint8_t reg)
     tx[0] = reg | 0x80;
     tx[1] = 0x00;
 
-    /* Select IMU */
     HAL_GPIO_WritePin(IMU_CS_GPIO_Port,
                       IMU_CS_Pin,
                       GPIO_PIN_RESET);
 
-    /* Send register address and receive response */
     imu_spi_status = HAL_SPI_TransmitReceive(&hspi1,
                                              tx,
                                              rx,
                                              2,
                                              100);
 
-    /* Deselect IMU */
     HAL_GPIO_WritePin(IMU_CS_GPIO_Port,
                       IMU_CS_Pin,
                       GPIO_PIN_SET);
@@ -57,7 +51,6 @@ uint8_t IMU_ReadRegister(uint8_t reg)
     return rx[1];
 }
 
-/* USER CODE END 0 */
 
 int main(void)
 {
@@ -68,18 +61,12 @@ int main(void)
     MX_GPIO_Init();
     MX_SPI1_Init();
 
-    /* Give the IMU time to power up */
     HAL_Delay(100);
 
-    /* MPU WHO_AM_I register = 0x75 */
     imu_who_am_i = IMU_ReadRegister(0x75);
 
     while (1)
     {
-        /*
-         * Nothing needed here yet.
-         * imu_who_am_i stores the sensor ID.
-         */
         HAL_Delay(1000);
     }
 }
@@ -156,7 +143,6 @@ static void MX_GPIO_Init(void)
 
     __HAL_RCC_GPIOA_CLK_ENABLE();
 
-    /* CS starts HIGH = IMU not selected */
     HAL_GPIO_WritePin(IMU_CS_GPIO_Port,
                       IMU_CS_Pin,
                       GPIO_PIN_SET);

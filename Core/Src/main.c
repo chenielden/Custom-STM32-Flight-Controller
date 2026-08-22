@@ -15,37 +15,30 @@ SPI_HandleTypeDef hspi1;
 
 /* USER CODE BEGIN PV */
 
-/* IMU identification / status */
 volatile uint8_t imu_who_am_i = 0;
 volatile uint8_t imu_init_ok = 0;
 volatile HAL_StatusTypeDef imu_spi_status = HAL_ERROR;
 
-/* Raw accelerometer */
 volatile int16_t accel_x_raw = 0;
 volatile int16_t accel_y_raw = 0;
 volatile int16_t accel_z_raw = 0;
 
-/* Raw gyroscope */
 volatile int16_t gyro_x_raw = 0;
 volatile int16_t gyro_y_raw = 0;
 volatile int16_t gyro_z_raw = 0;
 
-/* Temperature */
 volatile int16_t temp_raw = 0;
 
-/* Accelerometer in g */
 volatile float accel_x_g = 0.0f;
 volatile float accel_y_g = 0.0f;
 volatile float accel_z_g = 0.0f;
 
-/* Gyroscope in degrees/second */
 volatile float gyro_x_dps = 0.0f;
 volatile float gyro_y_dps = 0.0f;
 volatile float gyro_z_dps = 0.0f;
 
 /* USER CODE END PV */
 
-/* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_SPI1_Init(void);
@@ -130,6 +123,7 @@ void ICM20602_ReadRegisters(uint8_t reg,
     uint8_t address = reg | 0x80;
     uint8_t dummy[14] = {0};
 
+
     if (length > 14)
     {
         return;
@@ -189,9 +183,6 @@ uint8_t ICM20602_Init(void)
 
     HAL_Delay(10);
 
-    /*
-     * Check the ID again after reset/configuration.
-     */
     imu_who_am_i = ICM20602_ReadRegister(0x75);
 
     if (imu_who_am_i != 0x12)
@@ -218,29 +209,20 @@ void ICM20602_ReadSensor(void)
         return;
     }
 
-    /* Accelerometer */
     accel_x_raw = (int16_t)(((uint16_t)data[0] << 8) | data[1]);
     accel_y_raw = (int16_t)(((uint16_t)data[2] << 8) | data[3]);
     accel_z_raw = (int16_t)(((uint16_t)data[4] << 8) | data[5]);
 
-    /* Temperature */
     temp_raw = (int16_t)(((uint16_t)data[6] << 8) | data[7]);
 
-    /* Gyroscope */
     gyro_x_raw = (int16_t)(((uint16_t)data[8] << 8) | data[9]);
     gyro_y_raw = (int16_t)(((uint16_t)data[10] << 8) | data[11]);
     gyro_z_raw = (int16_t)(((uint16_t)data[12] << 8) | data[13]);
 
-    /*
-     * +/-2 g = 16384 LSB/g
-     */
     accel_x_g = (float)accel_x_raw / 16384.0f;
     accel_y_g = (float)accel_y_raw / 16384.0f;
     accel_z_g = (float)accel_z_raw / 16384.0f;
 
-    /*
-     * +/-250 deg/s = 131 LSB/(deg/s)
-     */
     gyro_x_dps = (float)gyro_x_raw / 131.0f;
     gyro_y_dps = (float)gyro_y_raw / 131.0f;
     gyro_z_dps = (float)gyro_z_raw / 131.0f;
@@ -249,10 +231,6 @@ void ICM20602_ReadSensor(void)
 /* USER CODE END 0 */
 
 
-/**
-  * @brief  The application entry point.
-  * @retval int
-  */
 int main(void)
 {
     HAL_Init();
@@ -268,12 +246,6 @@ int main(void)
                       IMU_CS_Pin,
                       GPIO_PIN_SET);
 
-    /*
-     * Initialize ICM-20602.
-     *
-     * Success = 1
-     * Failure = 0
-     */
     imu_init_ok = ICM20602_Init();
 
     /* USER CODE END 2 */
@@ -288,7 +260,10 @@ int main(void)
         }
         else
         {
-
+            /*
+             * Keep retrying WHO_AM_I so debugger shows
+             * whether communication comes back.
+             */
             imu_who_am_i = ICM20602_ReadRegister(0x75);
         }
 
